@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="red.fuyun.dao.UserInfoMapper">
+
+
+    <sql id="key">
+        <trim suffixOverrides=",">
+            <if test="tenantId!=null">
+                tenant_id,
+            </if>
+            <if test="ua!=null">
+                ua,
+            </if>
+            <if test="cookie!=null">
+                cookie,
+            </if>
+            <if test="studentNo!=null">
+                student_no,
+            </if>
+
+            <if test="origin!=null">
+                origin,
+            </if>
+            <if test="cpdailyInfo!=null">
+                cpdailyInfo,
+            </if>
+            <if test="AmpCookie!=null">
+                AmpCookie,
+            </if>
+
+        </trim>
+    </sql>
+
+    <!-- 对应的插入字段的值 -->
+    <sql id="values">
+        <trim suffixOverrides=",">
+            <if test="tenantId!=null">
+                #{tenantId},
+            </if>
+            <if test="ua!=null">
+                #{ua},
+            </if>
+            <if test="cookie!=null">
+                #{cookie},
+            </if>
+            <if test="studentNo!=null">
+                #{studentNo},
+            </if>
+            <if test="origin!=null">
+                #{origin},
+            </if>
+            <if test="cpdailyInfo!=null">
+                #{cpdailyInfo},
+            </if>
+            <if test="AmpCookie!=null">
+                #{AmpCookie},
+            </if>
+
+        </trim>
+    </sql>
+    <insert id="insert" useGeneratedKeys="true" parameterType="userInfoDo" keyProperty="id" keyColumn="id">
+        insert into userinfo (<include refid="key"/>) values (<include refid="values"/>)
+    </insert>
+
+
+<!--    <insert id="insertUserInfo" useGeneratedKeys="true" parameterType="schoolInfo" keyProperty="id">-->
+<!--        insert into user_info (uid,uname,pwd,sid) values (#{uid},#{uname},#{pwd},#{sid})-->
+<!--    </insert>-->
+
+    <update id="update" parameterType="userInfoDo">
+        update userinfo
+        <set>
+            <if test="tenantId!=null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="ua!=null">
+                ua = #{ua},
+            </if>
+            <if test="cookie!=null">
+                cookie = #{cookie},
+            </if>
+
+            <if test="studentNo!=null">
+                student_no = #{studentNo},
+            </if>
+
+            <if test="origin!=null">
+                origin = #{origin},
+            </if>
+            <if test="cpdailyInfo!=null">
+                cpdailyInfo = #{cpdailyInfo},
+            </if>
+            <if test="AmpCookie!=null">
+                AmpCookie = #{AmpCookie},
+            </if>
+
+        </set>
+        where id = #{id}
+    </update>
+
+
+    <select id="queryById" parameterType="int" resultType="userInfoDo" >
+        select * from userinfo where id =  #{id}
+    </select>
+
+    <select id="queryByStudentNo" parameterType="string" resultType="userInfoDo" >
+        select * from userinfo where student_no =  #{studentNo}
+    </select>
+
+</mapper>

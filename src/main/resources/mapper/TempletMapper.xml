@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="red.fuyun.dao.TempletMapper">
+
+    <sql id="key">
+        <trim suffixOverrides=",">
+            <if test="uid!=null">
+                uid,
+            </if>
+            <if test="cpdailyExtension!=null">
+                cpdaily_extension,
+            </if>
+            <if test="data!=null">
+                `data`,
+            </if>
+            <if test="longitude!=null">
+                longitude,
+            </if>
+            <if test="latitude!=null">
+                latitude,
+            </if>
+            <if test="model!=null">
+                model,
+            </if>
+            <if test="signAddress!=null">
+                signAddress,
+            </if>
+            <if test="appVersion!=null">
+                appVersion,
+            </if>
+            <if test="systemName!=null">
+                systemName,
+            </if>
+            <if test="deviceId!=null">
+                `deviceId`,
+            </if>
+            <if test="userId!=null">
+                userId,
+            </if>
+            <if test="signPhotoUrl!=null">
+                signPhotoUrl,
+            </if>
+            <if test="collectorPhotoUrl!=null">
+                collectorPhotoUrl,
+            </if>
+            <if test="attendancePhotoUrl!=null">
+                attendancePhotoUrl,
+            </if>
+            <if test="taskType!=null">
+                taskType,
+            </if>
+        </trim>
+    </sql>
+
+    <sql id="values">
+        <trim suffixOverrides=",">
+            <if test="uid!=null">
+                #{uid},
+            </if>
+            <if test="cpdailyExtension!=null">
+                #{cpdailyExtension},
+            </if>
+            <if test="data!=null">
+                #{data},
+            </if>
+            <if test="longitude!=null">
+                #{longitude},
+            </if>
+            <if test="latitude!=null">
+                #{latitude},
+            </if>
+            <if test="model!=null">
+                #{model},
+            </if>
+            <if test="signAddress!=null">
+                #{signAddress},
+            </if>
+            <if test="appVersion!=null">
+                #{appVersion},
+            </if>
+            <if test="systemName!=null">
+                #{systemName},
+            </if>
+            <if test="deviceId!=null">
+                #{deviceId},
+            </if>
+            <if test="userId!=null">
+                #{userId},
+            </if>
+            <if test="signPhotoUrl!=null">
+                #{signPhotoUrl},
+            </if>
+            <if test="collectorPhotoUrl!=null">
+                #{collectorPhotoUrl},
+            </if>
+            <if test="attendancePhotoUrl!=null">
+                #{attendancePhotoUrl},
+            </if>
+            <if test="taskType!=null">
+                #{taskType},
+            </if>
+        </trim>
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyColumn="id" keyProperty="id" parameterType="templetDo">
+        INSERT INTO templet (<include refid="key"/>) values (<include refid="values"/>)
+    </insert>
+
+    
+
+    <select id="queryTempletById" parameterType="int" resultType="templetDo">
+        SELECT * FROM templet WHERE id = #{id}
+    </select>
+
+
+    <select id="queryTempletByCpdailyInfo" parameterType="string" resultType="templetDo">
+        SELECT * FROM templet WHERE cpdaily_extension = #{cpdailyInfo}
+    </select>
+
+    <select id="queryTempletByUserId" parameterType="string" resultType="templetDo">
+        SELECT * FROM templet WHERE userId = #{userid}
+    </select>
+
+
+    <delete id="delTempletByUid" parameterType="int">
+        delete from templet where uid = #{uid}
+    </delete>
+    
+    
+    <update id="updateCpdailyInfoById">
+        update templet set cpdaily_extension = #{cpdailyInfo},longitude = #{lon},latitude = #{lat},signAddress = #{address} where id = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="red.fuyun.dao.ScheduleMapper">
+
+
+    <sql id="key">
+        <trim suffixOverrides=",">
+            <if test="uid!=null">
+                uid,
+            </if>
+            <if test="tid!=null">
+                tid,
+            </if>
+            <if test="rateTaskBeginTime!=null">
+                rateTaskBeginTime,
+            </if>
+            <if test="rateTaskEndTime!=null">
+                rateTaskEndTime,
+            </if>
+            <if test="taskType!=null">
+                taskType,
+            </if>
+            <if test="advise!=null">
+                advise,
+            </if>
+            <if test="info!=null">
+                info,
+            </if>
+            <if test="state!=null">
+                state,
+            </if>
+        </trim>
+    </sql>
+
+    <!-- 对应的插入字段的值 -->
+    <sql id="values">
+        <trim suffixOverrides=",">
+            <if test="uid!=null">
+                #{uid},
+            </if>
+            <if test="tid!=null">
+                #{tid},
+            </if>
+            <if test="rateTaskBeginTime!=null">
+                #{rateTaskBeginTime},
+            </if>
+            <if test="rateTaskEndTime!=null">
+                #{rateTaskEndTime},
+            </if>
+            <if test="taskType!=null">
+                #{taskType},
+            </if>
+            <if test="advise!=null">
+                #{advise},
+            </if>
+            <if test="info!=null">
+                #{info},
+            </if>
+            <if test="state!=null">
+                #{state},
+            </if>
+        </trim>
+    </sql>
+    <insert id="insert" useGeneratedKeys="true" parameterType="scheduleDo" keyProperty="id" keyColumn="id">
+        insert into schedule (<include refid="key"/>) values (<include refid="values"/>)
+    </insert>
+
+    <select id="queryByTimeAndState" resultType="scheduleDo">
+        SELECT * FROM `schedule` where #{nowtime} BETWEEN rateTaskBeginTime AND rateTaskEndTime and state = #{state} LIMIT 50
+    </select>
+
+    <update id="update" parameterType="scheduleDo">
+        update schedule
+        <set>
+            <if test="uid!=null">uid = #{uid},</if>
+            <if test="tid!=null">tid =#{tid},</if>
+            <if test="rateTaskBeginTime!=null">rateTaskBeginTime = #{rateTaskBeginTime},</if>
+            <if test="rateTaskEndTime!=null">rateTaskEndTime =#{rateTaskEndTime},</if>
+            <if test="taskType!=null">taskType = #{taskType},</if>
+            <if test="advise!=null">advise = #{advise},</if>
+            <if test="info!=null">info = #{info},</if>
+            <if test="state!=null">state = #{state},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="delScheduleByUid" parameterType="int">
+         delete from schedule where uid = #{uid}
+    </delete>
+
+
+    <update id="updateScheduleReset">
+        update schedule set state = #{state} ,advise = #{advise},info = #{info}
+    </update>
+
+    <select id="queryByUid" parameterType="int" resultType="scheduleDo">
+        SELECT * FROM schedule WHERE uid = #{uid}
+    </select>
+</mapper>

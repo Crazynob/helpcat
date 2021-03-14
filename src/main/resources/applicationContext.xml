@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+
+    <context:component-scan base-package="red.fuyun">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <task:annotation-driven/>
+    <context:property-placeholder ignore-unresolvable="true" location="classpath:db.properties"/>
+    <context:property-placeholder ignore-unresolvable="true" location="classpath:urlpath.properties"/>
+
+<!--    org.springframework.beans.factory.config.PropertyPlaceholderConfigurer-->
+    <bean id="PropertyPlaceholderConfigurer" class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+        <property name="order" value="1" />
+        <property name="ignoreUnresolvablePlaceholders" value="true" />
+        <property name="locations">
+            <list>
+                <!--读取src目录的db.properties文件-->
+                <value>classpath:db.properties</value>
+                <!--读取src目录的redis-config.properties文件-->
+                <value>classpath:urlpath.properties</value>
+            </list>
+        </property>
+    </bean>
+
+
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <!-- 配置初始化大小、最小、最大 -->
+        <property name="initialSize" value="12" />
+        <property name="minIdle" value="10" />
+        <property name="maxActive" value="100" />
+        <!-- 配置从连接池获取连接等待超时的时间 -->
+        <property name="maxWait" value="10000" />
+
+        <!-- 配置间隔多久启动一次DestroyThread，对连接池内的连接才进行一次检测，单位是毫秒。
+            检测时:1.如果连接空闲并且超过minIdle以外的连接，如果空闲时间超过minEvictableIdleTimeMillis设置的值则直接物理关闭。2.在minIdle以内的不处理。
+        -->
+        <property name="timeBetweenEvictionRunsMillis" value="600000" />
+        <!-- 配置一个连接在池中最大空闲时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="300000" />
+        <!-- 设置从连接池获取连接时是否检查连接有效性，true时，每次都检查;false时，不检查 -->
+        <property name="testOnBorrow" value="false" />
+        <!-- 设置往连接池归还连接时是否检查连接有效性，true时，每次都检查;false时，不检查 -->
+        <property name="testOnReturn" value="false" />
+        <!-- 设置从连接池获取连接时是否检查连接有效性，true时，如果连接空闲时间超过minEvictableIdleTimeMillis进行检查，否则不检查;false时，不检查 -->
+        <property name="testWhileIdle" value="true" />
+        <!-- 检验连接是否有效的查询语句。如果数据库Driver支持ping()方法，则优先使用ping()方法进行检查，否则使用validationQuery查询进行检查。(Oracle jdbc Driver目前不支持ping方法) -->
+        <property name="validationQuery" value="select 1 from dual" />
+        <!-- 单位：秒，检测连接是否有效的超时时间。底层调用jdbc Statement对象的void setQueryTimeout(int seconds)方法 -->
+        <!-- <property name="validationQueryTimeout" value="1" />  -->
+
+        <!-- 打开后，增强timeBetweenEvictionRunsMillis的周期性连接检查，minIdle内的空闲连接，每次检查强制验证连接有效性. 参考：https://github.com/alibaba/druid/wiki/KeepAlive_cn -->
+        <property name="keepAlive" value="true" />
+
+        <!-- 连接泄露检查，打开removeAbandoned功能 , 连接从连接池借出后，长时间不归还，将触发强制回连接。回收周期随timeBetweenEvictionRunsMillis进行，如果连接为从连接池借出状态，并且未执行任何sql，并且从借出时间起已超过removeAbandonedTimeout时间，则强制归还连接到连接池中。 -->
+        <property name="removeAbandoned" value="true" />
+        <!-- 超时时间，秒 -->
+        <property name="removeAbandonedTimeout" value="80"/>
+        <!-- 关闭abanded连接时输出错误日志，这样出现连接泄露时可以通过错误日志定位忘记关闭连接的位置 -->
+        <property name="logAbandoned" value="true" />
+
+    </bean>
+
+    <!--配置生产SqlSession对象的工厂-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+<!--        如果*Mapper.xml 文件和Mapper接口在同一个路径下可以省略-->
+        <property name="mapperLocations" value="classpath:mapper/*.xml"/>
+
+        <property name="typeAliasesPackage" value="red.fuyun.pojo.Do"/>
+    </bean>
+
+    <!--扫描接口包路径，生成包下所有接口的代理对象，并且放入spring容器中-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="red.fuyun.dao" />
+    </bean>
+
+
+<!--    线程池-->
+    <bean id="threadPoolTaskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <!-- 线程池维护线程的最少数量 -->
+        <property name="corePoolSize" value="5"></property>
+        <!-- 允许空闲时间 -->
+        <property name="keepAliveSeconds" value="600"></property>
+        <!-- 线程池维护线程的最大数量 -->
+        <property name="maxPoolSize" value="10"></property>
+        <!-- 缓存队列 -->
+        <property name="queueCapacity" value="200"></property>
+
+        <!-- 对拒绝task的处理策略 -->
+        <property name="rejectedExecutionHandler">
+            <bean class="java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy" />
+        </property>
+    </bean>
+
+
+
+<!--    &lt;!&ndash; 要调用的工作类 &ndash;&gt;-->
+<!--    <bean id="resetState" class="red.fuyun.campusphere.impl.ResetState"></bean>-->
+<!--    <bean id="waitSigneQueue" class="red.fuyun.campusphere.impl.WaitSigneQueue"></bean>-->
+
+<!--    &lt;!&ndash; 定义调用对象和调用对象的方法 &ndash;&gt;-->
+<!--    <bean id="resetStateJobWork" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">-->
+<!--        &lt;!&ndash; 调用的类 &ndash;&gt;-->
+<!--        <property name="targetObject" ref="resetState"></property>-->
+<!--        &lt;!&ndash; 调用类中的方法 &ndash;&gt;-->
+<!--        <property name="targetMethod" value="executeInternal"/>-->
+<!--    </bean>-->
+
+<!--    &lt;!&ndash; 定义调用对象和调用对象的方法 &ndash;&gt;-->
+<!--    <bean id="waitSigneQueueJobWork" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">-->
+<!--        &lt;!&ndash; 调用的类 &ndash;&gt;-->
+<!--        <property name="targetObject" ref="waitSigneQueue"></property>-->
+<!--        &lt;!&ndash; 调用类中的方法 &ndash;&gt;-->
+<!--        <property name="targetMethod" value="executeInternal"/>-->
+<!--    </bean>-->
+
+
+<!--    &lt;!&ndash; 定义触发时间 &ndash;&gt;-->
+<!--    <bean id="resetStateJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">-->
+<!--        <property name="jobDetail" ref="resetStateJobWork" />-->
+<!--        &lt;!&ndash; 每隔1分钟审批一次 &ndash;&gt;-->
+<!--        <property name="cronExpression" value="0 0 0 1/1 * ?" />-->
+<!--    </bean>-->
+
+
+<!--    &lt;!&ndash; 定义触发时间 &ndash;&gt;-->
+<!--    <bean id="waitSigneQueueJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">-->
+<!--        <property name="jobDetail" ref="waitSigneQueueJobWork" />-->
+<!--        &lt;!&ndash; 每隔1分钟审批一次 &ndash;&gt;-->
+<!--        <property name="cronExpression" value="3 * * * * ?" />-->
+<!--    </bean>-->
+
+
+
+
+<!--    <bean id="JobSchedule" lazy-init="false" autowire="no"-->
+<!--          class="org.springframework.scheduling.quartz.SchedulerFactoryBean">-->
+<!--        <property name="triggers">-->
+<!--            <list>-->
+<!--                <ref bean="resetStateJobTrigger" />-->
+<!--                <ref bean="waitSigneQueueJobTrigger" />-->
+<!--            </list>-->
+<!--        </property>-->
+<!--    </bean>-->
+
+
+</beans>

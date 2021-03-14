@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <title>HELPCATS</title>
+    <script type='text/javascript' src='https://api.map.baidu.com/api?v=2.0&ak=TGBPZGWp7GLP7xxoDvtayRQhFfaun6Lq'></script>
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css' rel='stylesheet'>
+</head>
+<body>
+<div class='container'>
+    <div style="margin-top: 5px">
+        <a class="btn btn-primary btn-block" href="此处可填写你QQ群的跳转链接" target="_blank" role="button">点击加群</a>
+    </div>
+
+    #2909#
+    <div style='width:100%;height:300px;margin-bottom: 10px;' id='allmap'></div>
+    <div class='col-lg-6 text-center' style='margin:10px 0px;'><p>地址:<span id='addre'></span></p>
+        <p>经度:<span id='lng'></span></p>
+        <p>纬度:<span id='lat'></span></p></div>
+    <div class='col-lg-6'>
+        <div class='input-group'><input type='text' class='form-control' id='address' placeholder='请输入搜索位置'><span
+                class='input-group-btn'><button class='btn btn-default' onclick='codeAddress()'
+                                                type='button'>Go!</button></span></div>
+    </div>
+    <div class='col-lg-6 text-center' style='margin:10px 0px;'><label><input type='radio' name='change' id='sign'
+                                                                             value='1'>签到定位</label><label><input
+            type='radio' name='change' id='sign' value='2'>采集定位</label><label><input type='radio' name='change'
+                                                                                     id='sign' value='3'>所有定位</label>
+        <div>
+            <button type='button' id='location' class='btn btn-primary'>确定修改</button>
+        </div>
+
+    </div>
+</div>
+
+
+
+<script src='https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js'></script>
+<script type='text/javascript'>var cpdailyInfo = '#2909#';
+var map = new BMap.Map('allmap');
+var point = new BMap.Point(116.404269, 39.916263);
+var geolocationControl = new BMap.GeolocationControl();
+map.centerAndZoom(point, 14);
+map.addEventListener('touchmove', function (e) {
+    map.enableDragging()
+});
+map.addEventListener('touchend', function (e) {
+    map.disableDragging()
+});
+var navigationControl = new BMap.NavigationControl({
+    anchor: BMAP_ANCHOR_TOP_LEFT,
+    type: BMAP_NAVIGATION_CONTROL_LARGE,
+    enableGeolocation: true
+});
+var geolocationControl = new BMap.GeolocationControl();
+var geoc = new BMap.Geocoder();
+map.addControl(navigationControl);
+map.addControl(geolocationControl);
+map.addEventListener('click', showInfo);
+
+function showInfo(e) {
+    var marker4 = new BMap.Marker(new BMap.Point(e.point.lng, e.point.lat));
+    map.clearOverlays();
+    map.addOverlay(marker4);
+    map.panTo(e.point);
+    point = new BMap.Point(e.point.lng, e.point.lat);
+    $('#lng').text(e.point.lng);
+    $('#lat').text(e.point.lat);
+    geoc.getLocation(point, function (rs) {
+        var addComp = rs.addressComponents;
+        console.log(addComp);
+        var address = addComp.province + addComp.city + addComp.district + addComp.street + addComp.streetNumber;
+        $('#addre').text(address)
+    })
+}
+
+function codeAddress() {
+    var local = new BMap.LocalSearch(map, {renderOptions: {map: map}});
+    local.search($('#address').val())
+}
+
+$('#location').click(function () {
+    var flag = $('input[name=change]:checked').val();
+    console.log(point);
+    console.log('flag:' + flag);
+    if (!flag) {
+        alert('没有选项选中!');
+        return
+    }
+    $.ajax({
+        url: 'https://mobile.campushoy.com/update/location',
+        type: 'get',
+        data: {
+            'flag': flag,
+            'lng': point.lng,
+            'lat': point.lat,
+            'cpdailyInfo': cpdailyInfo,
+            'address': $('#addre').text()
+        },
+        success: function (data) {
+            alert(data.msg)
+        },
+        error: function () {
+            alert('失败')
+        }
+    })
+});</script>
+<script src='https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js'></script>
+</body>
+</html>
